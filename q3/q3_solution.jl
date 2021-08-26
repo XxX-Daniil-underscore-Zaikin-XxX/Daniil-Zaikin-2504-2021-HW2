@@ -8,8 +8,8 @@ function fds(func, x, h)
     return (func(x + h) - func(x))/(h)
 end
 
-function abs_error(func, x, h, approx_func, accur_func)
-    return abs(accur_func(BigFloat(x)) - approx_func(func, BigFloat(x), BigFloat(h)))
+function abs_error(func, x, h, approx_func, accur_value)
+    return abs(accur_value - approx_func(func, BigFloat(x), BigFloat(h)))
 end
 
 function cds(func, x, h)
@@ -24,26 +24,29 @@ end
 # *avoid*, not *remove*
 sine_set = (x->(sin(x^2)), BigFloat(0.5), big"0.968912421710644784144595449494")
 e_set = (x->(ℯ^x), BigFloat(1), ℯ)
-atan_set = (x -> (atan(x)/(1 + ℯ^(-x^2))), BigFloat(2), x -> (ℯ^(x^2)*(1 + ℯ^(x^2) + 2*(x + x^3)*atan(x)))/((1 + ℯ^(x^2))^2*(1 + x^2)))
+atan_set = (x -> (atan(x)/(1 + ℯ^(-x^2))), BigFloat(2), big"0.2746237281548575890153809496775478")
 
 
 # Test the performance of each approximation for each function
 
-# performance_testing_range = map(x->(10.0^(-x)), 3.0:0.0001:60)
-# to = TimerOutput()
+performance_testing_range = map(x->(10.0^(-x)), 3.0:0.01:60)
+to = TimerOutput()
 
-# for func_set in [(atan_set, "atan function"), (sine_set, "sine function"), (e_set, "exponent function")]
-#     for approx_method in [fds, cds, cvm]
-#         # Simply times how long it takes to collate all absolute errors and find their min
-#         @timeit to func_set[2]*": "*String(Symbol(approx_method)) begin
-#             b = map(h->abs_error(func_set[1][1], func_set[1][2], BigFloat(h), approx_method, func_set[1][3]), performance_testing_range)
-#             c = argmin(b)
-#         end
-#     end
-# end
+optimal_value_df = DataFrame(function_name=String[], approximation_method=String[], optimal_h=BigFloat[], minimal_difference=BigFloat[])
 
-# println(to)
+for func_set in [(atan_set, "atan function"), (sine_set, "sine function"), (e_set, "exponent function")]
+    for approx_method in [fds, cds, cvm]
+        # Simply times how long it takes to collate all absolute errors and find their min
+        @timeit to func_set[2]*": "*String(Symbol(approx_method)) begin
+            b = map(h->abs_error(func_set[1][1], func_set[1][2], BigFloat(h), approx_method, func_set[1][3]), performance_testing_range)
+            c = argmin(b)
+        end
+        push!(optimal_value_df, (func_set[2], String(Symbol(approx_method)), performance_testing_range[c], b[c]))
+    end
+end
 
+println(to)
+println(optimal_value_df)
 
 # Demonstrate the differences via a chart
 
