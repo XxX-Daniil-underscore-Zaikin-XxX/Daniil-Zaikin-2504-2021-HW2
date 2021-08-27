@@ -74,13 +74,16 @@ for approx_method ∈ approx_methods_for_df
     norms_df[!, string(approx_method[1])] = map(L->norm(approx_method[2](structured_P(L), L) - structured_π(L)), L_given)
 end
 
-results = run(suite, verbose = true, seconds = 2, samples = 5)
+# Run our thing
+results = run(suite, seconds = 2, samples = 5)
 
-# Plot the DataFrame
+
+# Plot the DataFrames
 
 # Make sure none of the values break the graph
 inds = (norms_df.c .> 0) .& (norms_df.d .> 0) .& (norms_df.b .> 0) .& (norms_df.e .> 0)
-@df norms_df plot(
+# Plot the absolute errors of each method
+@show @df norms_df plot(
     :a[inds], [:b[inds] :c[inds] :d[inds] :e[inds]], 
     xaxis=:log10,
     xtickfont = font(5, "Courier"), 
@@ -91,17 +94,19 @@ inds = (norms_df.c .> 0) .& (norms_df.d .> 0) .& (norms_df.b .> 0) .& (norms_df.
     title = "Demonstration of Approximation Methods"
 )
 
+# Prepare the benchmarks for plotting (load their median times into a dataframe)
 benchmarks_df = DataFrame(L=L_given)
 for method in keys(results)
     benchmarks_df[!, String(Symbol(method))] = map(L->median(results[method][L]).time, L_given)
 end
 
-@df benchmarks_df plot(
+# Plot the benchmarks
+@show @df benchmarks_df plot(
     :L, [:method_1 :method_2 :method_3 :method_4], 
     xaxis=:log10,
     xtickfont = font(5, "Courier"), 
     xlabel = "L", 
-    ylabel = "Absolute Error", 
+    ylabel = "Time (in one unit or another)", 
     yscale=:log10, 
     label = ["Method 1 (Linear Algebra)" "Method 2 (Matrix Power)" "Method 3 (Eigenvector)" "Method 4 (Random Seq)"], 
     title = "Demonstration of Approximation Methods"
