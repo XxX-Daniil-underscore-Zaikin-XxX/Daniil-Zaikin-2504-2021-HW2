@@ -54,8 +54,9 @@ charting_range = map(x->(10.0^(-x)), 3.0:0.01:60) # to avoid complete computer d
 
 # Fill the DataFrame with data points for each approximation
 df = DataFrame(a=charting_range)
-for approx_method ∈ [("b", fds), ("c", cds), ("d", cvm)]
-    df[!, approx_method[1]] = map(h->abs_error(atan_set[1], BigFloat(atan_set[2]), BigFloat(h), approx_method[2], atan_set[3]), charting_range)
+approx_methods_for_df = zip('b':'d', [fds, cds, cvm])
+for approx_method ∈ approx_methods_for_df
+    df[!, string(approx_method[1])] = map(h->abs_error(atan_set[1], BigFloat(atan_set[2]), BigFloat(h), approx_method[2], atan_set[3]), charting_range)
 end
 
 # Plot the DataFrame
