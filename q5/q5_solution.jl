@@ -42,6 +42,7 @@ function plot_solutions( t::Int64,
     p4 = plot(  reduce_data_points(x_values_full, y_values_full)..., xlabel = "Time", ylabel = "Energy",
     label = transpose(map(x->x[1], energy_values)), title = title*" (energy)")
     
+    # Exclude the energy plot if not needed
     plots_to_plot = position_plots
     if show_energy
         push!(plots_to_plot, p4)
